@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gerador de Senhas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/styles.css') }}"
+    />
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <p class="eyebrow">Projeto de Engenharia de Software Generativa</p>
+        <h1>Gerador de Senhas Seguras</h1>
+        <p class="subtitle">
+          Gere senhas fortes, avalie a entropia e copie com um clique.
+        </p>
+      </section>
+
+      <section class="card">
+        <div class="password-panel">
+          <label for="password-output">Senha gerada</label>
+          <div class="password-output-wrapper">
+            <input
+              id="password-output"
+              type="text"
+              readonly
+              placeholder="Sua senha aparecerá aqui"
+            />
+            <button id="copy-button" type="button">Copiar</button>
+          </div>
+        </div>
+
+        <form id="password-form" class="controls">
+          <div class="field">
+            <div class="field-header">
+              <label for="length">Comprimento</label>
+              <span id="length-value">16</span>
+            </div>
+            <input id="length" name="length" type="range" min="8" max="64" value="16" />
+          </div>
+
+          <div class="checkbox-grid">
+            <label><input type="checkbox" name="use_uppercase" checked /> Letras maiúsculas</label>
+            <label><input type="checkbox" name="use_lowercase" checked /> Letras minúsculas</label>
+            <label><input type="checkbox" name="use_digits" checked /> Números</label>
+            <label><input type="checkbox" name="use_symbols" checked /> Símbolos</label>
+          </div>
+
+          <div class="strength-box">
+            <div>
+              <span class="muted">Força</span>
+              <strong id="strength-label">Aguardando geração</strong>
+            </div>
+            <div>
+              <span class="muted">Entropia</span>
+              <strong id="entropy-value">0 bits</strong>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button id="generate-button" type="submit">Gerar senha</button>
+            <button id="clear-button" type="button" class="secondary">Limpar</button>
+          </div>
+          <p id="feedback" class="feedback" aria-live="polite"></p>
+        </form>
+      </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  </body>
+</html>
