@@ -1,0 +1,17 @@
+C4Container
+    title Diagrama de Containers - Gerador de Senhas
+
+    Person(usuario, "Usuário", "Pessoa que precisa gerar uma senha segura")
+
+    System_Boundary(sistema, "Gerador de Senhas") {
+        Container(frontend, "Frontend", "HTML, CSS, JavaScript (vanilla)", "Formulário de opções, chamada à API via fetch, exibição da senha/força e cópia para a área de transferência")
+        Container(webapp, "Aplicação Flask", "Python 3.11, Flask", "Expõe as rotas HTTP, valida a requisição e delega a geração/avaliação de senha")
+        Container(dominio, "Camada de domínio e serviço", "Python (PasswordService, PasswordOptions)", "Regras de negócio: validação de opções, geração criptográfica e cálculo de entropia/força")
+    }
+
+    Rel(usuario, frontend, "Define opções e solicita senha", "Navegador")
+    Rel(frontend, webapp, "POST /api/passwords", "JSON via HTTPS")
+    Rel(webapp, dominio, "generate() / evaluate_strength()", "Chamada de função em processo")
+    Rel(webapp, frontend, "Retorna senha e força ou erro 400", "JSON")
+
+    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")

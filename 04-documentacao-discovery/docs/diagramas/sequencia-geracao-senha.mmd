@@ -1,0 +1,29 @@
+sequenceDiagram
+    actor Usuario as Usuário
+    participant FE as Frontend (index.html / app.js)
+    participant API as Rota Flask (POST /api/passwords)
+    participant SVC as PasswordService
+
+    Usuario->>FE: Ajusta comprimento e grupos de caracteres, clica em "Gerar"
+    FE->>API: POST /api/passwords {length, use_uppercase, use_lowercase, use_digits, use_symbols}
+    API->>SVC: generate(length, use_uppercase, use_lowercase, use_digits, use_symbols)
+    SVC->>SVC: normaliza opções (aplica padrão de Config quando length é omitido)
+
+    alt opções inválidas (comprimento fora do limite ou nenhum grupo selecionado)
+        SVC-->>API: PasswordGenerationError(mensagem)
+        API-->>FE: 400 {"error": mensagem}
+        FE-->>Usuario: Exibe mensagem de erro na área de feedback
+    else opções válidas
+        SVC->>SVC: monta charset e sorteia caracteres com secrets.SystemRandom
+        SVC-->>API: senha gerada
+        API->>SVC: evaluate_strength(senha)
+        SVC-->>API: {label, score, entropy}
+        API-->>FE: 200 {"password": senha, "strength": {label, score, entropy}}
+        FE-->>Usuario: Exibe a senha e a força (rótulo + bits de entropia)
+
+        opt Usuário clica em "Copiar"
+            Usuario->>FE: Clica em "Copiar"
+            FE->>FE: navigator.clipboard.writeText(senha)
+            FE-->>Usuario: "Senha copiada para a área de transferência"
+        end
+    end
