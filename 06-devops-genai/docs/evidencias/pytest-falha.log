@@ -1,0 +1,134 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-8.3.5, pluggy-1.7.0 -- <venv>/python.exe
+cachedir: .pytest_cache
+rootdir: <projeto>
+configfile: pytest.ini
+testpaths: tests
+plugins: anyio-4.16.0
+collecting ... collected 16 items
+
+tests/test_tempo_quebra.py::test_politica_carrega_valores_numericos FAILED [  6%]
+tests/test_tempo_quebra.py::test_politica_respeita_variavel_de_ambiente FAILED [ 12%]
+tests/test_tempo_quebra.py::test_estimativa_com_taxa_explicita PASSED    [ 18%]
+tests/test_tempo_quebra.py::test_entropia_zero_e_instantanea PASSED      [ 25%]
+tests/test_tempo_quebra.py::test_entropia_negativa_e_rejeitada PASSED    [ 31%]
+tests/test_tempo_quebra.py::test_entropia_acima_do_limite_vira_infinito PASSED [ 37%]
+tests/test_tempo_quebra.py::test_estimativa_usa_politica_padrao FAILED   [ 43%]
+tests/test_tempo_quebra.py::test_senha_de_16_caracteres_atende_politica FAILED [ 50%]
+tests/test_tempo_quebra.py::test_senha_fraca_nao_atende_politica FAILED  [ 56%]
+tests/test_tempo_quebra.py::test_formatar_tempo[0.2-instantaneo] PASSED  [ 62%]
+tests/test_tempo_quebra.py::test_formatar_tempo[30-30 segundos] PASSED   [ 68%]
+tests/test_tempo_quebra.py::test_formatar_tempo[120-2 minutos] PASSED    [ 75%]
+tests/test_tempo_quebra.py::test_formatar_tempo[7200-2 horas] PASSED     [ 81%]
+tests/test_tempo_quebra.py::test_formatar_tempo[259200-3 dias] PASSED    [ 87%]
+tests/test_tempo_quebra.py::test_formatar_tempo[157788000.0-5 anos] PASSED [ 93%]
+tests/test_tempo_quebra.py::test_formatar_tempo[157788000000.0-mais de mil anos] PASSED [100%]
+
+================================== FAILURES ===================================
+___________________ test_politica_carrega_valores_numericos ___________________
+
+    def test_politica_carrega_valores_numericos():
+        politica = carregar_politica()
+>       assert isinstance(politica["tentativas_por_segundo"], float)
+E       AssertionError: assert False
+E        +  where False = isinstance('1e10', float)
+
+tests\test_tempo_quebra.py:26: AssertionError
+_________________ test_politica_respeita_variavel_de_ambiente _________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x...>
+
+    def test_politica_respeita_variavel_de_ambiente(monkeypatch):
+        monkeypatch.setenv("TENTATIVAS_POR_SEGUNDO", "1000")
+>       assert carregar_politica()["tentativas_por_segundo"] == 1000.0
+E       AssertionError: assert '1000' == 1000.0
+
+tests\test_tempo_quebra.py:32: AssertionError
+_____________________ test_estimativa_usa_politica_padrao _____________________
+
+    def test_estimativa_usa_politica_padrao():
+        # 2^40 / 2 / 1e10 = ~55 s
+>       assert estimar_tempo_quebra(40) == pytest.approx(54.97558, rel=1e-4)
+
+tests\test_tempo_quebra.py:61: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+entropia_bits = 40, tentativas_por_segundo = '1e10'
+
+    def estimar_tempo_quebra(entropia_bits: float, tentativas_por_segundo: float | None = None) -> float:
+        """Tempo medio, em segundos, para achar a senha testando metade do espaco de busca."""
+        if entropia_bits < 0:
+            raise ValueError("A entropia nao pode ser negativa.")
+        if tentativas_por_segundo is None:
+            tentativas_por_segundo = carregar_politica()["tentativas_por_segundo"]
+        if entropia_bits > ENTROPIA_MAXIMA_CALCULAVEL:
+            return math.inf
+    
+        combinacoes = 2.0 ** entropia_bits
+>       return (combinacoes / 2) / tentativas_por_segundo
+E       TypeError: unsupported operand type(s) for /: 'float' and 'str'
+
+app\tempo_quebra.py:31: TypeError
+_________________ test_senha_de_16_caracteres_atende_politica _________________
+
+    def test_senha_de_16_caracteres_atende_politica():
+        # 16 caracteres com os 4 grupos (86 simbolos) -> 102.82 bits no modulo 01
+>       resultado = avaliar_senha(102.82)
+
+tests\test_tempo_quebra.py:66: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+app\tempo_quebra.py:55: in avaliar_senha
+    segundos = estimar_tempo_quebra(entropia_bits)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+entropia_bits = 102.82, tentativas_por_segundo = '1e10'
+
+    def estimar_tempo_quebra(entropia_bits: float, tentativas_por_segundo: float | None = None) -> float:
+        """Tempo medio, em segundos, para achar a senha testando metade do espaco de busca."""
+        if entropia_bits < 0:
+            raise ValueError("A entropia nao pode ser negativa.")
+        if tentativas_por_segundo is None:
+            tentativas_por_segundo = carregar_politica()["tentativas_por_segundo"]
+        if entropia_bits > ENTROPIA_MAXIMA_CALCULAVEL:
+            return math.inf
+    
+        combinacoes = 2.0 ** entropia_bits
+>       return (combinacoes / 2) / tentativas_por_segundo
+E       TypeError: unsupported operand type(s) for /: 'float' and 'str'
+
+app\tempo_quebra.py:31: TypeError
+____________________ test_senha_fraca_nao_atende_politica _____________________
+
+    def test_senha_fraca_nao_atende_politica():
+>       resultado = avaliar_senha(40)
+
+tests\test_tempo_quebra.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+app\tempo_quebra.py:55: in avaliar_senha
+    segundos = estimar_tempo_quebra(entropia_bits)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+entropia_bits = 40, tentativas_por_segundo = '1e10'
+
+    def estimar_tempo_quebra(entropia_bits: float, tentativas_por_segundo: float | None = None) -> float:
+        """Tempo medio, em segundos, para achar a senha testando metade do espaco de busca."""
+        if entropia_bits < 0:
+            raise ValueError("A entropia nao pode ser negativa.")
+        if tentativas_por_segundo is None:
+            tentativas_por_segundo = carregar_politica()["tentativas_por_segundo"]
+        if entropia_bits > ENTROPIA_MAXIMA_CALCULAVEL:
+            return math.inf
+    
+        combinacoes = 2.0 ** entropia_bits
+>       return (combinacoes / 2) / tentativas_por_segundo
+E       TypeError: unsupported operand type(s) for /: 'float' and 'str'
+
+app\tempo_quebra.py:31: TypeError
+- generated xml file: <projeto>\relatorio-testes.xml -
+=========================== short test summary info ===========================
+FAILED tests/test_tempo_quebra.py::test_politica_carrega_valores_numericos - ...
+FAILED tests/test_tempo_quebra.py::test_politica_respeita_variavel_de_ambiente
+FAILED tests/test_tempo_quebra.py::test_estimativa_usa_politica_padrao - Type...
+FAILED tests/test_tempo_quebra.py::test_senha_de_16_caracteres_atende_politica
+FAILED tests/test_tempo_quebra.py::test_senha_fraca_nao_atende_politica - Typ...
+======================== 5 failed, 11 passed in 0.85s =========================

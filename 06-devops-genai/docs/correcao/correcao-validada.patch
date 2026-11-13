@@ -1,0 +1,57 @@
+--- a/06-devops-genai/app/config.py
++++ b/06-devops-genai/app/config.py
+@@ -1,8 +1,25 @@
+ """Politica de seguranca lida das variaveis de ambiente."""
+ 
++import math
+ import os
+ 
+ 
++def _ler_float_positivo(nome: str, padrao: str) -> float:
++    """Le uma variavel de ambiente numerica e falha cedo se o valor nao fizer sentido.
++
++    os.getenv sempre devolve str: a conversao precisa acontecer aqui, na fronteira,
++    e nao em quem consome a politica.
++    """
++    bruto = os.getenv(nome, padrao)
++    try:
++        valor = float(bruto)
++    except ValueError:
++        raise ValueError(f"{nome} deve ser numerico; recebido {bruto!r}.") from None
++    if not math.isfinite(valor) or valor <= 0:
++        raise ValueError(f"{nome} deve ser um numero positivo e finito; recebido {bruto!r}.")
++    return valor
++
++
+ def carregar_politica() -> dict:
+     """Le a politica de senhas do ambiente.
+ 
+@@ -11,6 +28,6 @@
+     - TEMPO_MINIMO_ANOS: tempo medio de quebra exigido para a senha ser aceita.
+     """
+     return {
+-        "tentativas_por_segundo": os.getenv("TENTATIVAS_POR_SEGUNDO", "1e10"),
+-        "tempo_minimo_anos": float(os.getenv("TEMPO_MINIMO_ANOS", "100")),
++        "tentativas_por_segundo": _ler_float_positivo("TENTATIVAS_POR_SEGUNDO", "1e10"),
++        "tempo_minimo_anos": _ler_float_positivo("TEMPO_MINIMO_ANOS", "100"),
+     }
+--- a/06-devops-genai/tests/test_tempo_quebra.py
++++ b/06-devops-genai/tests/test_tempo_quebra.py
+@@ -32,6 +32,17 @@
+     assert carregar_politica()["tentativas_por_segundo"] == 1000.0
+ 
+ 
++@pytest.mark.parametrize("valor", ["abc", "", "0", "-5", "inf", "nan"])
++@pytest.mark.parametrize("variavel", ["TENTATIVAS_POR_SEGUNDO", "TEMPO_MINIMO_ANOS"])
++def test_politica_rejeita_valores_invalidos(monkeypatch, variavel, valor):
++    # Casos achados na validacao humana da correcao sugerida pela IA:
++    # "0" dava ZeroDivisionError, "-5"/"inf" diziam "instantaneo" e "nan"
++    # dizia "mais de mil anos" mas "NAO atende a politica".
++    monkeypatch.setenv(variavel, valor)
++    with pytest.raises(ValueError, match=variavel):
++        carregar_politica()
++
++
+ # --- Estimativa com taxa explicita (nao depende da politica) ----------------
+ 
+ 
