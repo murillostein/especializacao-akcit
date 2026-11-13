@@ -32,6 +32,17 @@ def test_politica_respeita_variavel_de_ambiente(monkeypatch):
     assert carregar_politica()["tentativas_por_segundo"] == 1000.0
 
 
+@pytest.mark.parametrize("valor", ["abc", "", "0", "-5", "inf", "nan"])
+@pytest.mark.parametrize("variavel", ["TENTATIVAS_POR_SEGUNDO", "TEMPO_MINIMO_ANOS"])
+def test_politica_rejeita_valores_invalidos(monkeypatch, variavel, valor):
+    # Casos achados na validacao humana da correcao sugerida pela IA:
+    # "0" dava ZeroDivisionError, "-5"/"inf" diziam "instantaneo" e "nan"
+    # dizia "mais de mil anos" mas "NAO atende a politica".
+    monkeypatch.setenv(variavel, valor)
+    with pytest.raises(ValueError, match=variavel):
+        carregar_politica()
+
+
 # --- Estimativa com taxa explicita (nao depende da politica) ----------------
 
 
