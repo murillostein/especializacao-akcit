@@ -1,0 +1,10 @@
+.pytest_cache/
+__pycache__/
+*.py[cod]
+.cache/
+
+# Gerados a cada execucao do pipeline (as copias de referencia ficam em docs/evidencias/)
+pytest.log
+relatorio-testes.xml
+diagnostico.md
+prompt-enviado.md

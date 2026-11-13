@@ -1,0 +1,89 @@
+# Pipeline do modulo 06 (DevOps com IA generativa).
+# Roda os testes e, se falharem, um agente de IA analisa o log e sugere a correcao.
+name: devops-genai (modulo 06)
+
+on:
+  push:
+    paths:
+      - "06-devops-genai/**"
+      - ".github/workflows/devops-genai.yml"
+  pull_request:
+    paths:
+      - "06-devops-genai/**"
+      - ".github/workflows/devops-genai.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write # comentario do diagnostico no PR
+
+defaults:
+  run:
+    working-directory: 06-devops-genai
+
+jobs:
+  testes:
+    name: Testes automatizados
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: 06-devops-genai/requirements*.txt
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Executar testes (pytest)
+        run: |
+          set -o pipefail
+          python -m pytest -v --junitxml=relatorio-testes.xml 2>&1 | tee pytest.log
+
+      - name: Guardar logs dos testes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-testes
+          path: |
+            06-devops-genai/pytest.log
+            06-devops-genai/relatorio-testes.xml
+
+  diagnostico-ia:
+    name: Diagnostico com IA generativa
+    needs: testes
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: 06-devops-genai/requirements*.txt
+
+      - name: Instalar dependencias do agente
+        run: pip install -r requirements-agente.txt
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: logs-testes
+          path: 06-devops-genai
+
+      - name: Analisar falha com GenAI
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python agente/diagnosticar_falha.py --log pytest.log --saida diagnostico.md --publicar
+
+      - name: Guardar diagnostico
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagnostico-ia
+          path: |
+            06-devops-genai/diagnostico.md
+            06-devops-genai/prompt-enviado.md

@@ -1,0 +1,46 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-8.3.5, pluggy-1.7.0 -- <venv>/python.exe
+rootdir: <projeto>
+configfile: pytest.ini
+testpaths: tests
+plugins: anyio-4.16.0
+collecting ... collected 36 items
+
+tests/test_agente.py::test_recorta_a_partir_da_secao_de_falhas PASSED    [  2%]
+tests/test_agente.py::test_log_sem_secao_de_falhas_e_enviado_inteiro PASSED [  5%]
+tests/test_agente.py::test_arquivos_citados_ficam_dentro_do_projeto PASSED [  8%]
+tests/test_agente.py::test_inclui_modulos_importados_pelo_codigo_citado PASSED [ 11%]
+tests/test_agente.py::test_segredos_sao_mascarados PASSED                [ 13%]
+tests/test_agente.py::test_caminhos_locais_sao_anonimizados PASSED       [ 16%]
+tests/test_agente.py::test_prompt_contem_log_codigo_e_formato PASSED     [ 19%]
+tests/test_agente.py::test_prompt_minimo_nao_inclui_imports PASSED       [ 22%]
+tests/test_tempo_quebra.py::test_politica_carrega_valores_numericos PASSED [ 25%]
+tests/test_tempo_quebra.py::test_politica_respeita_variavel_de_ambiente PASSED [ 27%]
+tests/test_tempo_quebra.py::test_politica_rejeita_valores_invalidos[TENTATIVAS_POR_SEGUNDO-abc] PASSED [ 30%]
+tests/test_tempo_quebra.py::test_politica_rejeita_valores_invalidos[TENTATIVAS_POR_SEGUNDO-] PASSED [ 33%]
+tests/test_tempo_quebra.py::test_politica_rejeita_valores_invalidos[TENTATIVAS_POR_SEGUNDO-0] PASSED [ 36%]
+tests/test_tempo_quebra.py::test_politica_rejeita_valores_invalidos[TENTATIVAS_POR_SEGUNDO--5] PASSED [ 38%]
+tests/test_tempo_quebra.py::test_politica_rejeita_valores_invalidos[TENTATIVAS_POR_SEGUNDO-inf] PASSED [ 41%]
+tests/test_tempo_quebra.py::test_politica_rejeita_valores_invalidos[TENTATIVAS_POR_SEGUNDO-nan] PASSED [ 44%]
+tests/test_tempo_quebra.py::test_politica_rejeita_valores_invalidos[TEMPO_MINIMO_ANOS-abc] PASSED [ 47%]
+tests/test_tempo_quebra.py::test_politica_rejeita_valores_invalidos[TEMPO_MINIMO_ANOS-] PASSED [ 50%]
+tests/test_tempo_quebra.py::test_politica_rejeita_valores_invalidos[TEMPO_MINIMO_ANOS-0] PASSED [ 52%]
+tests/test_tempo_quebra.py::test_politica_rejeita_valores_invalidos[TEMPO_MINIMO_ANOS--5] PASSED [ 55%]
+tests/test_tempo_quebra.py::test_politica_rejeita_valores_invalidos[TEMPO_MINIMO_ANOS-inf] PASSED [ 58%]
+tests/test_tempo_quebra.py::test_politica_rejeita_valores_invalidos[TEMPO_MINIMO_ANOS-nan] PASSED [ 61%]
+tests/test_tempo_quebra.py::test_estimativa_com_taxa_explicita PASSED    [ 63%]
+tests/test_tempo_quebra.py::test_entropia_zero_e_instantanea PASSED      [ 66%]
+tests/test_tempo_quebra.py::test_entropia_negativa_e_rejeitada PASSED    [ 69%]
+tests/test_tempo_quebra.py::test_entropia_acima_do_limite_vira_infinito PASSED [ 72%]
+tests/test_tempo_quebra.py::test_estimativa_usa_politica_padrao PASSED   [ 75%]
+tests/test_tempo_quebra.py::test_senha_de_16_caracteres_atende_politica PASSED [ 77%]
+tests/test_tempo_quebra.py::test_senha_fraca_nao_atende_politica PASSED  [ 80%]
+tests/test_tempo_quebra.py::test_formatar_tempo[0.2-instantaneo] PASSED  [ 83%]
+tests/test_tempo_quebra.py::test_formatar_tempo[30-30 segundos] PASSED   [ 86%]
+tests/test_tempo_quebra.py::test_formatar_tempo[120-2 minutos] PASSED    [ 88%]
+tests/test_tempo_quebra.py::test_formatar_tempo[7200-2 horas] PASSED     [ 91%]
+tests/test_tempo_quebra.py::test_formatar_tempo[259200-3 dias] PASSED    [ 94%]
+tests/test_tempo_quebra.py::test_formatar_tempo[157788000.0-5 anos] PASSED [ 97%]
+tests/test_tempo_quebra.py::test_formatar_tempo[157788000000.0-mais de mil anos] PASSED [100%]
+
+============================= 36 passed in 0.43s ==============================

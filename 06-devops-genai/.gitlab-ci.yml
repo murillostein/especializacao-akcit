@@ -1,0 +1,66 @@
+# Pipeline do modulo 06 (DevOps com IA generativa) para GitLab CI.
+#
+# Este arquivo fica dentro do modulo para manter o repositorio organizado por
+# unidade. No GitLab, aponte para ele em:
+#   Settings > CI/CD > General pipelines > CI/CD configuration file
+#   = 06-devops-genai/.gitlab-ci.yml
+#
+# Variaveis (Settings > CI/CD > Variables, marcadas como Masked):
+#   ANTHROPIC_API_KEY  credencial da API do Claude
+#   GITLAB_API_TOKEN   token com escopo `api` para comentar no Merge Request (opcional)
+
+stages:
+  - test
+  - diagnose
+
+default:
+  image: python:3.12-slim
+
+variables:
+  MODULO: 06-devops-genai
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH
+
+testes:
+  stage: test
+  script:
+    - cd "$MODULO"
+    - pip install -r requirements.txt
+    - set -o pipefail
+    - python -m pytest -v --junitxml=relatorio-testes.xml 2>&1 | tee pytest.log
+  artifacts:
+    when: always
+    paths:
+      - $MODULO/pytest.log
+      - $MODULO/relatorio-testes.xml
+    reports:
+      junit: $MODULO/relatorio-testes.xml
+    expire_in: 1 week
+
+diagnostico_ia:
+  stage: diagnose
+  when: on_failure
+  allow_failure: true
+  needs:
+    - job: testes
+      artifacts: true
+  script:
+    - cd "$MODULO"
+    - pip install -r requirements-agente.txt
+    - python agente/diagnosticar_falha.py --log pytest.log --saida diagnostico.md --publicar
+  artifacts:
+    when: always
+    paths:
+      - $MODULO/diagnostico.md
+      - $MODULO/prompt-enviado.md
+    expire_in: 1 week
